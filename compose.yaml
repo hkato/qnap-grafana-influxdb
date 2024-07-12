@@ -1,0 +1,39 @@
+services:
+  influxdb:
+    image: sequentialread/influxdb:2.1.1-armv7
+    container_name: influxdb
+    restart: always
+    ports:
+      - "8086:8086"
+    volumes:
+      - ./docker/influxdb:/root/.influxdbv2
+
+  grafana:
+    image: grafana/grafana-oss:10.4.5
+    container_name: grafana
+    restart: always
+    user: '0'
+    ports:
+     - "3000:3000"
+    volumes:
+      - ./docker/grafana/data:/var/lib/grafana
+    depends_on:
+      - influxdb
+      - postgres
+    environment:
+      - GF_DATABASE_TYPE=postgres
+      - GF_DATABASE_HOST=postgres
+      - GF_DATABASE_NAME=grafana
+      - GF_DATABASE_USER=grafana
+      - GF_DATABASE_PASSWORD=p@ssw0rd
+
+  postgres:
+    image: postgres:12.19
+    container_name: postgres
+    restart: always
+    environment:
+      - POSTGRES_USER=grafana
+      - POSTGRES_PASSWORD=p@ssw0rd
+      - POSTGRES_DB=grafana
+    volumes:
+      - ./docker/postgres:/var/lib/postgresql/data
